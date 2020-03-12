@@ -1,23 +1,48 @@
-const webpack = require('webpack');
+// webpack.config.js
 
-const config = {
-  // production に設定すると最適化された状態で、
-  // development に設定するとソースマップ有効でJSファイルが出力される
-  mode: "production",
+const path = require("path")
 
-  // メインのJS
-  entry: "./src/js/index.js",
-  // 出力ファイル
+// vue-loader@15から必要
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+
+module.exports = {
+  // エントリポイントのファイル
+  entry: "./src/index.js",
   output: {
-    filename: "main.min.js"
+    // 出力先のディレクトリ
+    path: path.resolve(__dirname, "./dest"),
+    // 出力ファイル名
+    filename: "bundle.js"
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      $: "jquery",
-      jQuery: "jquery",
-      "window.jQuery": "jquery"
-    })
-  ]
+  devServer: {
+    // webpackの扱わないファイル(HTMLや画像など)が入っているディレクトリ
+    contentBase: path.resolve(__dirname, "public"),
+    // compress: true,
+    port: 5001
+  },
+  module: {
+    rules: [
+      {
+        test: /\.vue$/, // ファイルが.vueで終われば...
+        loader: "vue-loader" // vue-loaderを使う
+      },
+      {
+        test: /\.js$/,
+        loader: "babel-loader"
+      },
+      {
+        test: /\.css$/,
+        use: ["vue-style-loader", "css-loader"] // css-loader -> vue-style-loaderの順で通していく
+      }
+    ]
+  },
+  resolve: {
+    // import './foo.vue' の代わりに import './foo' と書けるようになる(拡張子省略)
+    extensions: [".js", ".vue"],
+    alias: {
+      // vue-template-compilerに読ませてコンパイルするために必要
+      vue$: "vue/dist/vue.esm.js"
+    }
+  },
+  plugins: [new VueLoaderPlugin()]
 }
-
-module.exports = config;
